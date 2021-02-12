@@ -22,18 +22,17 @@
 #'
 
 #' @export
-jive_est <- function(y,X,Z,type=JIVE1, vcov = HCE){
+jive_est <- function(y,X,Z,type='JIVE1', vcov = 'HCE'){
   n  <- length(y);
   k  <- dim(X)[2];
   ret <- list();
-  if(type==JIVE1){
-    jive <- estimate_jive(y,X,Z,type,vcov)
-    ret$coe <- jive$coe
-    ret$var <- jive$var
-    ret$se  <- sqrt(diag(jive$var))
-    ret$t   <- ret$coe / ret$se
-    ret$p   <- 2*pt(ret$t,n-1)
-  }
+
+  jive <- estimate_jive(y,X,Z,type,vcov)
+  ret$coe <- jive$coe
+  ret$var <- jive$var
+  ret$se  <- sqrt(diag(jive$var))
+  ret$t   <- ret$coe / ret$se
+  #ret$p   <- 2*pt(ret$t,n-1)
 
   return(ret)
 }#jive_est
@@ -48,7 +47,7 @@ estimate_jive <- function(y,X,Z,type,vcov){
   X.hat <- matrix(0,n,k);
   h <- vector("numeric",n);
 
-  if(type==JIVE1){
+  if(type=='JIVE1'){
     for(i in 1:n){
       h   <- solve(t(Z[-i,])%*%Z[-i,])%*%(t(Z[-i,])%*%X[-i,])
       X.hat[i,] <- Z[i,]%*%h
@@ -57,7 +56,7 @@ estimate_jive <- function(y,X,Z,type,vcov){
     ret$coe <- b_jive
   }
 
-  if(type==JIVE2){
+  if(type=='JIVE2'){
     for(i in 1:n){
       h   <- solve(t(Z)%*%Z)%*%(t(Z[-i,])%*%X[-i,])*(n/(n-1))
       X.hat[i,] <- Z[i,]%*%h
@@ -67,10 +66,8 @@ estimate_jive <- function(y,X,Z,type,vcov){
   }
 
 
-
-
   ### Heteroskedasticity Consistent Standard Erros
-  if(vcov==HCE){
+  if(vcov=='HCE'){
     e.hat2 <- matrix(0,n,1);
     for(i in 1:n){
       e.hat2[i,] <- (y[i] - X[i,] %*% b_jive)^2
@@ -86,9 +83,11 @@ estimate_jive <- function(y,X,Z,type,vcov){
   }
 
   ### Homoskedastic Standard Erros
-  if(vcov==HC0){
+  if(vcov=='HC0'){
     sigma.hat2 <- sum((y - X%*%b_jive)^2)/n
     var.hat <- sigma.hat2 * solve(t(X.hat)%*%X) %*% t(X.hat)%*%X.hat %*%solve(t(X)%*%X.hat)
     ret$var  <- var.hat
   }
+
+  return(ret)
 }#JIVE1
